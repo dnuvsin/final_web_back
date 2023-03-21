@@ -4,6 +4,7 @@ const Quote = require("inspirational-quotes");
 const mysql = require("mysql");
 const cors = require("cors");
 const bodyParser = require("body-parser");
+const jwt = require("jsonwebtoken");
 
 const app = express();
 app.use(cors());
@@ -63,6 +64,31 @@ app.post("/signup", (req, res) => {
     console.log("User data inserted into database");
     res.send("User data inserted into database");
   });
+});
+
+app.post("/login", (req, res) => {
+  const email = req.body.email;
+  const password = req.body.password;
+
+  // Query the database to check if user credentials are valid
+  db.query(
+    "SELECT * FROM users WHERE email = ? AND password = ?",
+    [email, password],
+    (err, results) => {
+      if (err) throw err;
+
+      // If no matching user found, send error response
+      if (results.length === 0) {
+        res.status(401).send("Invalid email or password");
+      } else {
+        // If valid user credentials, generate a JWT token and send success response
+        const token = jwt.sign({ email: email }, secretKey, {
+          expiresIn: "1h",
+        });
+        res.status(200).json({ token: token });
+      }
+    }
+  );
 });
 
 app.listen(5001, () => {
