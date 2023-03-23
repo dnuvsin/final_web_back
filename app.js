@@ -1,8 +1,11 @@
 const express = require("express");
 const Quote = require("inspirational-quotes");
+const bcrypt = require('bcrypt')
+const SALT_ROUNDS = 10
 
 const mysql = require("mysql");
 const cors = require("cors");
+const TOKEN_SECRET = process.env.TOKEN_SECRET;
 const bodyParser = require("body-parser");
 const jwt = require("jsonwebtoken");
 
@@ -66,17 +69,18 @@ app.post("/signup", (req, res) => {
   });
 });
 
-app.post("/login", (req, res) => {
+app.get("/login", (req, res) => {
   const email = req.body.email;
   const password = req.body.password;
 
   // Query the database to check if user credentials are valid
-  db.query(
-    "SELECT * FROM users WHERE email = ? AND password = ?",
-    [email, password],
-    (err, results) => {
-      if (err) throw err;
+  const sql = `SELECT * FROM users WHERE email = '${email}' AND password = '${password}'`;
 
+  connection.query(sql, (err, row) => {
+    if (err) {
+      console.log(err);
+      res.status(500).send("Internal Server Error");
+    } else {
       // If no matching user found, send error response
       if (results.length === 0) {
         res.status(401).send("Invalid email or password");
@@ -88,8 +92,61 @@ app.post("/login", (req, res) => {
         res.status(200).json({ token: token });
       }
     }
-  );
+  });
 });
+
+//ใช้อันนี้นะต้อง npm install bcrypt เพิ่ม
+app.post("/test_login" , (req,res) => {
+  let email = req.query.email;
+  let password = req.query.password;
+
+  let query = `SELECT * FROM users WHERE email = "${email}" `
+
+  connection.query(query ,(err,row) => {
+      if(err){
+          res.json({
+              "STATUS" : "400" ,
+              "MESSAGE" : "Error in DB "
+          })
+      }else{
+          let db_password = row[0].password
+          bcrypt.compare(password, db_password , (err,result) => {
+              if(result){
+                  let payload = {
+                      "email" : row[0].email,
+                      "id" : row[0].id,
+                  }
+                  let token = jwt.sign(payload , TOKEN_SECRET , {expiresIn : '3d'})
+                  res.send(token)
+              }else {res.send(`${db_password} ${password}` )}
+          })
+      }
+  })
+})
+
+app.post("/edit_tour", (req,res) => {
+  let id = req.query.id;
+  let title = req.body.title;
+  let description = req.body.description;
+  let image_url = req.body.image_url;
+
+  let query = `UPDATE photos SET title='${title}' or description='${description}' or image_url='${image_url}' WHERE id = ${id} `
+  connection.query(query,(err,rows) =>{
+    console.log(err)
+    if (err){
+      res.json({
+        "STATUS" : "400",
+        "MESSAGE" : "ERROR can't update "
+      })
+    }else{
+      res.json({
+        "STATUS" : "200",
+        "MESSAGE" : `Updating ${id} succesful`
+      })
+    }
+  })
+})
+
 
 app.listen(5001, () => {
   console.log("Server started Succc");
