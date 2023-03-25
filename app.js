@@ -70,6 +70,15 @@ app.get("/api/photos/:id", (req, res) => {
   });
 });
 
+app.delete("/api/photos/:id", (req, res) => {
+  const id = req.params.id;
+  const sql = `DELETE FROM users WHERE photos = ${id}`;
+  connection.query(sql, (err, results) => {
+    if (err) throw err;
+    res.send(results);
+  });
+});
+
 app.post("/signup", (req, res) => {
   const { firstName, lastName, email, password } = req.body;
 
