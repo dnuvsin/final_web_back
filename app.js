@@ -284,6 +284,15 @@ app.get("/contact", (req, res) => {
   });
 });
 
+app.delete("/contact/:id", (req, res) => {
+  const id = req.params.id;
+  const sql = `DELETE FROM contacts WHERE id = ${id}`;
+  connection.query(sql, (err, results) => {
+    if (err) throw err;
+    res.send(results);
+  });
+});
+
 app.listen(5001, () => {
   console.log("Server started Succc");
 });
