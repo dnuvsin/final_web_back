@@ -72,7 +72,7 @@ app.get("/api/photos/:id", (req, res) => {
 
 app.delete("/api/photos/:id", (req, res) => {
   const id = req.params.id;
-  const sql = `DELETE FROM users WHERE photos = ${id}`;
+  const sql = `DELETE FROM photos WHERE id = ${id}`;
   connection.query(sql, (err, results) => {
     if (err) throw err;
     res.send(results);
@@ -121,12 +121,9 @@ app.post("/signup", (req, res) => {
 
 //ใช้อันนี้นะต้อง npm install bcrypt เพิ่ม
 
-app.post("/test_login", (req, res) => {
-  let email = req.query.email;
-  let password = req.query.password;
-
+app.post("/test_login2", (req, res) => {
+  const { email, password } = req.body;
   let query = `SELECT * FROM users WHERE email = "${email}" `;
-
   connection.query(query, (err, row) => {
     if (err) {
       res.json({
@@ -140,13 +137,63 @@ app.post("/test_login", (req, res) => {
           let payload = {
             email: row[0].email,
             id: row[0].id,
+            name: row[0].name, // Add the user name to the JWT payload
           };
           let token = jwt.sign(payload, TOKEN_SECRET, { expiresIn: "3d" });
+          console.log(token);
           res.send(token);
+          res.send("login success");
         } else {
           res.send(`${db_password} ${password}`);
         }
       });
+    }
+  });
+});
+
+app.post("/test_login", (req, res) => {
+  const { email, password } = req.body;
+  let query = `SELECT * FROM users WHERE email = "${email}" `;
+  connection.query(query, (err, row) => {
+    if (err) {
+      res.json({
+        STATUS: "400",
+        MESSAGE: "Error in DB ",
+      });
+    } else {
+      let db_password = row[0].password;
+      bcrypt.compare(password, db_password, (err, result) => {
+        if (result) {
+          let payload = {
+            email: row[0].email,
+            id: row[0].id,
+            name: row[0].name, // Add the user name to the JWT payload
+          };
+          let token = jwt.sign(payload, TOKEN_SECRET, { expiresIn: "3d" });
+          console.log(token);
+          res.send(token);
+          res.send("login success");
+        } else {
+          res.send(`${db_password} ${password}`);
+        }
+      });
+    }
+  });
+});
+
+app.post("/get_name", (req, res) => {
+  const email = req.body.email;
+  let query = `SELECT first_name FROM users WHERE email = "${email}" `;
+  connection.query(query, (err, result) => {
+    if (err) {
+      res.json({
+        STATUS: "400",
+        MESSAGE: "Error in DB ",
+      });
+    } else {
+      console.log(result[0].first_name);
+      //console.log(result.data);
+      res.send(result[0].first_name);
     }
   });
 });
