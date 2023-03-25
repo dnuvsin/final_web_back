@@ -255,7 +255,7 @@ app.delete("/users/:id", (req, res) => {
   });
 });
 
-app.post("/api/contact", (req, res) => {
+app.post("/contact", (req, res) => {
   const { name, phone, email, message } = req.body;
   const query = `
     INSERT INTO contacts (name,phone, email, message) VALUES ('${name}','${phone}', '${email}', '${message}')
