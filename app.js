@@ -38,11 +38,11 @@ app.use((req, res, next) => {
   next();
 });
 
-app.get("/", (req, res) => {
-  const quote = Quote.getQuote();
-  const response = { quote };
-  res.json(response);
-});
+// app.get("/", (req, res) => {
+//   const quote = Quote.getQuote();
+//   const response = { quote };
+//   res.json(response);
+// });
 
 app.get("/api/photos", (req, res) => {
   connection.query("SELECT * FROM photos", (error, results) => {
@@ -187,13 +187,16 @@ app.delete("/users/:id", (req, res) => {
 
 app.post("/api/contact", (req, res) => {
   const { name, phone, email, message } = req.body;
+  // const name = req.query.name;
+  // const phone = req.query.phone;
+  // const email = req.query.email;
+  // const message = req.query.message;
 
   // Insert the form data into the "contacts" table
   const query = `
-    INSERT INTO contacts (name,phone, email, message)
-    VALUES ('${name}','${phone}', '${email}', '${message}')
+    INSERT INTO contacts (name,phone, email, message) VALUES ('${name}','${phone}', '${email}', '${message}')
   `;
-  connection.query(query, [name, email, message], (error, results) => {
+  connection.query(query, [name, phone, email, message], (error, results) => {
     if (error) {
       console.error("Error submitting form:", error);
       return res
