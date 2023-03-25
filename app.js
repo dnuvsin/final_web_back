@@ -55,6 +55,43 @@ app.get("/api/photos", (req, res) => {
   });
 });
 
+app.post("/add_tour", (req, res) => {
+  const { title, description, image_url } = req.body;
+
+  const sql = `INSERT INTO photos (title, description, image_url) VALUES ('${title}', '${description}', '${image_url}')`;
+
+  connection.query(sql, (err, result) => {
+    if (err) {
+      throw err;
+    }
+    console.log("Tour data inserted into database");
+    res.send("Tour data inserted into database");
+  });
+});
+
+app.post("/edit_tour", (req, res) => {
+  let id = req.query.id;
+  let title = req.body.title;
+  let description = req.body.description;
+  let image_url = req.body.image_url;
+
+  let query = `UPDATE photos SET title='${title}' or description='${description}' or image_url='${image_url}' WHERE id = ${id} `;
+  connection.query(query, (err, rows) => {
+    console.log(err);
+    if (err) {
+      res.json({
+        STATUS: "400",
+        MESSAGE: "ERROR can't update ",
+      });
+    } else {
+      res.json({
+        STATUS: "200",
+        MESSAGE: `Updating ${id} succesful`,
+      });
+    }
+  });
+});
+
 app.get("/api/photos/:id", (req, res) => {
   const { id } = req.params;
   const query = `SELECT * FROM photos WHERE id = ${id}`;
@@ -198,29 +235,6 @@ app.post("/get_name", (req, res) => {
   });
 });
 
-app.post("/edit_tour", (req, res) => {
-  let id = req.query.id;
-  let title = req.body.title;
-  let description = req.body.description;
-  let image_url = req.body.image_url;
-
-  let query = `UPDATE photos SET title='${title}' or description='${description}' or image_url='${image_url}' WHERE id = ${id} `;
-  connection.query(query, (err, rows) => {
-    console.log(err);
-    if (err) {
-      res.json({
-        STATUS: "400",
-        MESSAGE: "ERROR can't update ",
-      });
-    } else {
-      res.json({
-        STATUS: "200",
-        MESSAGE: `Updating ${id} succesful`,
-      });
-    }
-  });
-});
-
 app.get("/users", (req, res) => {
   connection.query("SELECT * FROM users", (error, results) => {
     if (error) {
@@ -243,12 +257,6 @@ app.delete("/users/:id", (req, res) => {
 
 app.post("/api/contact", (req, res) => {
   const { name, phone, email, message } = req.body;
-  // const name = req.query.name;
-  // const phone = req.query.phone;
-  // const email = req.query.email;
-  // const message = req.query.message;
-
-  // Insert the form data into the "contacts" table
   const query = `
     INSERT INTO contacts (name,phone, email, message) VALUES ('${name}','${phone}', '${email}', '${message}')
   `;
@@ -262,6 +270,17 @@ app.post("/api/contact", (req, res) => {
 
     console.log("Form submitted successfully");
     return res.json({ message: "Form submitted successfully." });
+  });
+});
+
+app.get("/contact", (req, res) => {
+  connection.query("SELECT * FROM contacts", (error, results) => {
+    if (error) {
+      console.log(error);
+      res.status(500).send("Internal Server Error");
+    } else {
+      res.json(results);
+    }
   });
 });
 
