@@ -293,6 +293,26 @@ app.delete("/contact/:id", (req, res) => {
   });
 });
 
+app.get("/reserve", (req, res) => {
+  connection.query("SELECT * FROM Reserve", (error, results) => {
+    if (error) {
+      console.log(error);
+      res.status(500).send("Internal Server Error");
+    } else {
+      res.json(results);
+    }
+  });
+});
+
+app.delete("/reserve/:id", (req, res) => {
+  const id = req.params.id;
+  const sql = `DELETE FROM Reserve WHERE id = ${id}`;
+  connection.query(sql, (err, results) => {
+    if (err) throw err;
+    res.send(results);
+  });
+});
+
 app.listen(5001, () => {
   console.log("Server started Succc");
 });
