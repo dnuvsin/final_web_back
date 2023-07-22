@@ -29,7 +29,7 @@ SET time_zone = "+00:00";
 
 CREATE TABLE `contacts` (
   `id` int(11) NOT NULL,
-  `date` date NOT NULL DEFAULT current_timestamp(),
+  `date` datetime NOT NULL DEFAULT current_timestamp(),
   `name` varchar(200) NOT NULL,
   `phone` varchar(11) NOT NULL,
   `email` varchar(200) NOT NULL,
